@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 using UnityEditor;
-
+using System.IO;
 class MyFolderStruct
 {
     public string Name;
@@ -49,7 +49,16 @@ public class CreateProjectTree {
             {
                 Debug.Log("Creating: <b>" + folder.Path + "</b>");
                 AssetDatabase.CreateFolder(folder.Parent.Path, folder.Name);
-                //TODO: Add ".keep" files to empty folders for GIT
+                File.Create(Directory.GetCurrentDirectory() + "\\" + folder.Path + "\\.keep");
+            }
+            if (AssetDatabase.IsValidFolder(folder.Path))
+            {
+                if (Directory.GetFiles(Directory.GetCurrentDirectory() + "\\" + folder.Path).Length < 1)
+                {
+                    File.Create(Directory.GetCurrentDirectory() + "\\" + folder.Path + "\\.keep");
+                    Debug.Log("Creating '.keep' file in: <b>" + folder.Path + "</b>");
+
+                }
             }
             else
             {
