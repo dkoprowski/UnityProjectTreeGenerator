@@ -77,7 +77,8 @@ public class CreateProjectTree {
         assets.Children.Add(new MyFolderStruct("Scripts", assets));
         assets.Children.Add(new MyFolderStruct("Scenes", assets));
         assets.Children.Add(new MyFolderStruct("Extensions", assets));
-
+        assets.Children.Add(new MyFolderStruct("Resources", assets));
+        
         var staticAssets = new MyFolderStruct("StaticAssets", assets);
         staticAssets.Children.Add(new MyFolderStruct("Animations", staticAssets));
         staticAssets.Children.Add(new MyFolderStruct("Animators", staticAssets));
