@@ -3,7 +3,7 @@ This script will generate basic folder structure for your Unity3D project.
 
 ## Installation  
 Simply clone this repo into your `Assets/Editor/*` directory.
-
+_If you don't have `Editor` folder - create it_
 ##Usage
 When you have cloned the repository look at your Unity. There is a new option in your  toolbar.
 Choose `Tools/Generate Project Tree` and enjoy.
