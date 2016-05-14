@@ -5,33 +5,31 @@ using System.IO;
 
 namespace ProjectTreeGenerator
 {
-    class MyFolderStruct
+    class Folder
     {
+        public string DirPath { get; private set; }
+        public string ParentPath { get; private set; }
         public string Name;
-        public List<MyFolderStruct> Children;
-        public MyFolderStruct Parent;
-        public string Path { get { return GeneratePath(); } }
-        public MyFolderStruct(string name, MyFolderStruct parent)
+        public List<Folder> Subfolders;
+
+        public Folder Add(string name)
+        {
+            Folder subfolder = null;
+            if (ParentPath.Length > 0)
+                subfolder = new Folder(name, ParentPath + Path.DirectorySeparatorChar + Name);
+            else
+                subfolder = new Folder(name, Name);
+
+            Subfolders.Add(subfolder);
+            return subfolder;
+        }
+
+        public Folder(string name, string dirPath)
         {
             Name = name;
-            Children = new List<MyFolderStruct>();
-            Parent = parent;
-        }
-
-        public MyFolderStruct()
-        {
-            Name = "";
-            Children = new List<MyFolderStruct>();
-        }
-
-        private string GeneratePath()
-        {
-            if (Parent != null)
-            {
-                return Parent.Path + "/" + Name;
-            }
-
-            return Name;
+            ParentPath = dirPath;
+            DirPath = ParentPath + Path.DirectorySeparatorChar + Name;
+            Subfolders = new List<Folder>();
         }
     }
 
@@ -41,65 +39,61 @@ namespace ProjectTreeGenerator
         [MenuItem("Tools/Generate Project Tree")]
         public static void Execute()
         {
-            var assets = GenerateDirectory();
+            var assets = GenerateFolderStructure();
             CreateFolders(assets);
         }
-        //TODO: Secure against cycles. 
-        private static void CreateFolders(MyFolderStruct folders)
-        {
-            foreach (var folder in folders.Children)
-            {
-                if (!AssetDatabase.IsValidFolder(folder.Path) && folder.Parent != null)
-                {
-                    Debug.Log("Creating: <b>" + folder.Path + "</b>");
-                    AssetDatabase.CreateFolder(folder.Parent.Path, folder.Name);
-                    File.Create(Directory.GetCurrentDirectory() + "\\" + folder.Path + "\\.keep");
-                }
-                if (AssetDatabase.IsValidFolder(folder.Path))
-                {
-                    if (Directory.GetFiles(Directory.GetCurrentDirectory() + "\\" + folder.Path).Length < 1)
-                    {
-                        File.Create(Directory.GetCurrentDirectory() + "\\" + folder.Path + "\\.keep");
-                        Debug.Log("Creating '.keep' file in: <b>" + folder.Path + "</b>");
 
-                    }
+        private static void CreateFolders(Folder rootFolder)
+        {
+            if (!AssetDatabase.IsValidFolder(rootFolder.DirPath))
+            {
+                Debug.Log("Creating: <b>" + rootFolder.DirPath + "</b>");
+                AssetDatabase.CreateFolder(rootFolder.ParentPath, rootFolder.Name);
+                File.Create(Directory.GetCurrentDirectory() + Path.DirectorySeparatorChar + rootFolder.DirPath + Path.DirectorySeparatorChar + ".keep");
+            }
+            else
+            {
+                if (Directory.GetFiles(Directory.GetCurrentDirectory() + Path.DirectorySeparatorChar + rootFolder.DirPath).Length < 1)
+                {
+                    File.Create(Directory.GetCurrentDirectory() + Path.DirectorySeparatorChar + rootFolder.DirPath + Path.DirectorySeparatorChar + ".keep");
+                    Debug.Log("Creating '.keep' file in: <b>" + rootFolder.DirPath + "</b>");
                 }
                 else
                 {
-                    Debug.Log("Creating aborted: " + folder.Path);
-                }
-
-                if (folder.Children.Count > 0)
-                {
-                    CreateFolders(folder);
+                    Debug.Log("Directory <b>" + rootFolder.DirPath + "</b> already exists");
                 }
             }
+
+            foreach (var folder in rootFolder.Subfolders)
+            {
+                CreateFolders(folder);
+            }
         }
-        private static MyFolderStruct GenerateDirectory()
+
+        private static Folder GenerateFolderStructure()
         {
-            MyFolderStruct assets = new MyFolderStruct() { Name = "Assets" };
-            assets.Children.Add(new MyFolderStruct("Scripts", assets));
-            assets.Children.Add(new MyFolderStruct("Scenes", assets));
-            assets.Children.Add(new MyFolderStruct("Extensions", assets));
-            assets.Children.Add(new MyFolderStruct("Resources", assets));
-            assets.Children.Add(new MyFolderStruct("Plugins", assets));
+            Folder rootFolder = new Folder("Assets", "");
+            rootFolder.Add("Scripts");
+            rootFolder.Add("Scenes");
+            rootFolder.Add("Extensions");
+            rootFolder.Add("Resources");
+            rootFolder.Add("Plugins");
 
-            var staticAssets = new MyFolderStruct("StaticAssets", assets);
-            staticAssets.Children.Add(new MyFolderStruct("Animations", staticAssets));
-            staticAssets.Children.Add(new MyFolderStruct("Animators", staticAssets));
-            staticAssets.Children.Add(new MyFolderStruct("Effects", staticAssets));
-            staticAssets.Children.Add(new MyFolderStruct("Fonts", staticAssets));
-            staticAssets.Children.Add(new MyFolderStruct("Materials", staticAssets));
-            staticAssets.Children.Add(new MyFolderStruct("Models", staticAssets));
-            staticAssets.Children.Add(new MyFolderStruct("Prefabs", staticAssets));
-            staticAssets.Children.Add(new MyFolderStruct("Shaders", staticAssets));
-            staticAssets.Children.Add(new MyFolderStruct("Sounds", staticAssets));
-            staticAssets.Children.Add(new MyFolderStruct("Sprites", staticAssets));
-            staticAssets.Children.Add(new MyFolderStruct("Textures", staticAssets));
-            staticAssets.Children.Add(new MyFolderStruct("Videos", staticAssets));
+            var staticAssets = rootFolder.Add("StaticAssets");
+            staticAssets.Add("Animations");
+            staticAssets.Add("Animators");
+            staticAssets.Add("Effects");
+            staticAssets.Add("Fonts");
+            staticAssets.Add("Materials");
+            staticAssets.Add("Models");
+            staticAssets.Add("Prefabs");
+            staticAssets.Add("Shaders");
+            staticAssets.Add("Sounds");
+            staticAssets.Add("Sprites");
+            staticAssets.Add("Textures");
+            staticAssets.Add("Videos");
 
-            assets.Children.Add(staticAssets);
-            return assets;
+            return rootFolder;
         }
     }
 }
