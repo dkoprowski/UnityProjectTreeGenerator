@@ -1,7 +1,7 @@
 # Unity project tree generator
 This script will generate basic folder structure for your Unity3D project.
 
-Take a look at my [blog post](http://koprowski.it/organize-your-unity-project-directories/) for more information about this plugin.
+Take a look at my [blog post](http://koprowski.it/2016/unity-project-directories/) for more information about this plugin.
 ## Installation  
 Simply clone this repo into your `Assets/Editor/*` directory.
 
